@@ -1,3 +1,3 @@
 # godot-math
 
-A port for the godot/core/math classes and methods.
+A Go port for select godot/core/math classes and methods.
