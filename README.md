@@ -1,3 +1,3 @@
-# godot-math
+# gdscript-libs
 
-A Go port for select godot/core/math classes and methods.
+A growing Go port for select gdscript classes and methods.
