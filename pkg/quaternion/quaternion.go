@@ -1,7 +1,10 @@
-package mathgd
+package quaternion
 
 import (
 	"math"
+
+	zerogdscript "github.com/Anaxarchus/zero-gdscript"
+	"github.com/Anaxarchus/zero-gdscript/pkg/vector3"
 )
 
 /**************************************************************************/
@@ -81,7 +84,7 @@ func IDENTITY() Quaternion {
 //}
 
 // Constructs a quaternion that will rotate around the given axis by the specified angle. The axis must be a normalized vector.
-func Rotated(axisNormal Vector3, angle float64) Quaternion {
+func Rotated(axisNormal vector3.Vector3, angle float64) Quaternion {
 	if !axisNormal.IsNormalized() {
 		return IDENTITY()
 	}
@@ -94,11 +97,11 @@ func From(quaternion *Quaternion) Quaternion {
 }
 
 // Constructs a quaternion representing the shortest arc between two points on the surface of a sphere with a radius of 1.0.
-func Between(p_v0, p_v1 Vector3) Quaternion { // Shortest arc.
+func Between(p_v0, p_v1 vector3.Vector3) Quaternion { // Shortest arc.
 	c := p_v0.Cross(p_v1)
 	d := p_v0.Dot(p_v1)
 
-	if d < -1.0+CMP_EPSILON {
+	if d < -1.0+zerogdscript.CMP_EPSILON {
 		return New(0, 1, 0, 0)
 	} else {
 		s := math.Sqrt((1.0 + d) * 2.0)

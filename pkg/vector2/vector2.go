@@ -1,4 +1,4 @@
-package mathgd
+package vector2
 
 /**************************************************************************/
 /*  vector2.h                                                             */
@@ -36,6 +36,8 @@ package mathgd
 
 import (
 	"math"
+
+	zerogdscript "github.com/Anaxarchus/zero-gdscript"
 )
 
 type Vector2 struct {
@@ -43,32 +45,16 @@ type Vector2 struct {
 	Y float64 `json:"y"`
 }
 
-func NewVector2(x, y float64) Vector2 {
+func New(x, y float64) Vector2 {
 	return Vector2{X: x, Y: y}
 }
 
-func ZeroVector2() Vector2 {
-	return NewVector2(0, 0)
+func Zero() Vector2 {
+	return New(0, 0)
 }
 
-func OneVector2() Vector2 {
-	return NewVector2(1, 1)
-}
-
-func UpVector2() Vector2 {
-	return NewVector2(0, 1)
-}
-
-func DownVector2() Vector2 {
-	return NewVector2(0, -1)
-}
-
-func LeftVector2() Vector2 {
-	return NewVector2(-1, 0)
-}
-
-func RightVector2() Vector2 {
-	return NewVector2(1, 0)
+func One() Vector2 {
+	return New(1, 1)
 }
 
 func (v Vector2) Add(b Vector2) Vector2 {
@@ -167,7 +153,7 @@ func (v Vector2) Normalized() Vector2 {
 
 func (v Vector2) IsNormalized() bool {
 	// use length_squared() instead of length() to avoid sqrt(), makes it more stringent.
-	return IsEqualApprox(v.LengthSquared(), 1)
+	return zerogdscript.IsEqualApprox(v.LengthSquared(), 1)
 }
 
 func (v Vector2) DistanceTo(b Vector2) float64 {
@@ -202,8 +188,8 @@ func (v Vector2) Cross(b Vector2) float64 {
 }
 
 func (v Vector2) Sign() Vector2 {
-	v.X = Sign(v.X)
-	v.Y = Sign(v.Y)
+	v.X = zerogdscript.Sign(v.X)
+	v.Y = zerogdscript.Sign(v.Y)
 	return v
 }
 
@@ -234,14 +220,14 @@ func (v Vector2) Rotated(x float64) Vector2 {
 }
 
 func (v Vector2) Posmod(x float64) Vector2 {
-	v.X = Fposmod(v.X, x)
-	v.Y = Fposmod(v.Y, x)
+	v.X = zerogdscript.Fposmod(v.X, x)
+	v.Y = zerogdscript.Fposmod(v.Y, x)
 	return v
 }
 
 func (v Vector2) Posmodv(b Vector2) Vector2 {
-	v.X = Fposmod(v.X, b.X)
-	v.Y = Fposmod(v.Y, b.Y)
+	v.X = zerogdscript.Fposmod(v.X, b.X)
+	v.Y = zerogdscript.Fposmod(v.Y, b.Y)
 	return v
 }
 
@@ -250,26 +236,26 @@ func (v Vector2) Project(b Vector2) Vector2 {
 }
 
 func (v Vector2) Clampi(min, max Vector2) Vector2 {
-	v.X = Clampf(v.X, min.X, max.X)
-	v.Y = Clampf(v.Y, min.Y, max.Y)
+	v.X = zerogdscript.Clampf(v.X, min.X, max.X)
+	v.Y = zerogdscript.Clampf(v.Y, min.Y, max.Y)
 	return v
 }
 
 func (v Vector2) Clampf(min, max float64) Vector2 {
-	v.X = Clampf(v.X, min, max)
-	v.Y = Clampf(v.Y, min, max)
+	v.X = zerogdscript.Clampf(v.X, min, max)
+	v.Y = zerogdscript.Clampf(v.Y, min, max)
 	return v
 }
 
 func (v Vector2) Snapped(to Vector2) Vector2 {
-	v.X = Snapped(v.X, to.X)
-	v.Y = Snapped(v.Y, to.Y)
+	v.X = zerogdscript.Snapped(v.X, to.X)
+	v.Y = zerogdscript.Snapped(v.Y, to.Y)
 	return v
 }
 
 func (v Vector2) Snappedf(to float64) Vector2 {
-	v.X = Snapped(v.X, to)
-	v.Y = Snapped(v.Y, to)
+	v.X = zerogdscript.Snapped(v.X, to)
+	v.Y = zerogdscript.Snapped(v.Y, to)
 	return v
 }
 
@@ -286,7 +272,7 @@ func (v Vector2) LimitLength(maxLength float64) Vector2 {
 func (v Vector2) MoveToward(to Vector2, delta float64) Vector2 {
 	vd := to.Sub(v)
 	len := vd.Length()
-	if len <= delta || len <= CMP_EPSILON {
+	if len <= delta || len <= zerogdscript.CMP_EPSILON {
 		return to
 	}
 	return vd.Divf(len).Mulf(delta).Add(v)
@@ -317,17 +303,13 @@ func (v Vector2) IsEqual(b Vector2) bool {
 }
 
 func (v Vector2) IsEqualApprox(b Vector2) bool {
-	return IsEqualApprox(v.X, b.X) && IsEqualApprox(v.Y, b.Y)
+	return zerogdscript.IsEqualApprox(v.X, b.X) && zerogdscript.IsEqualApprox(v.Y, b.Y)
 }
 
 func (v Vector2) IsZeroApprox() bool {
-	return IsZeroApprox(v.X) && IsZeroApprox(v.Y)
+	return zerogdscript.IsZeroApprox(v.X) && zerogdscript.IsZeroApprox(v.Y)
 }
 
 func (v Vector2) IsFinite() bool {
 	return !math.IsInf(v.X, 1) && !math.IsInf(v.Y, 1)
-}
-
-func (v Vector2) ToVector3(z float64) Vector3 {
-	return NewVector3(v.X, v.Y, z)
 }

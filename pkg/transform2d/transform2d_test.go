@@ -1,4 +1,4 @@
-package mathgd
+package transform2d
 
 import "testing"
 

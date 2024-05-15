@@ -1,8 +1,10 @@
-package mathgd
+package basis
 
 import (
 	"errors"
 	"math"
+
+	"github.com/Anaxarchus/zero-gdscript/internal/utils"
 )
 
 /**************************************************************************/
@@ -54,7 +56,11 @@ type Basis struct {
 	Rows [3][3]float64
 }
 
-func NewBasis() Basis {
+type Vector interface {
+	Dot(with Vector) float64
+}
+
+func New() Basis {
 	return Basis{
 		Rows: [3][3]float64{
 			{1, 0, 0},
@@ -64,8 +70,8 @@ func NewBasis() Basis {
 	}
 }
 
-func NewBasisFromAxisAndAngle(axis Vector3, angle float64) Basis {
-	basis := NewBasis()
+func FromAxisAndAngle(axis [3]float64, angle float64) Basis {
+	basis := New()
 	basis.SetAxisAngle(axis, angle)
 	return basis
 }
@@ -77,29 +83,29 @@ func (b *Basis) Set(pXX, pXY, pXZ, pYX, pYY, pYZ, pZX, pZY, pZZ float64) {
 }
 
 // SetColumns sets the columns of the basis matrix.
-func (b *Basis) SetColumns(x, y, z Vector3) {
+func (b *Basis) SetColumns(x, y, z [3]float64) {
 	b.SetColumn(0, x)
 	b.SetColumn(1, y)
 	b.SetColumn(2, z)
 }
 
 // GetColumn returns the specified column of the basis matrix.
-func (b Basis) GetColumn(index int) Vector3 {
+func (b Basis) GetColumn(index int) []float64 {
 	// Get actual basis axis column (we store transposed as Rows for performance).
-	return Vector3{X: b.Rows[0][index], Y: b.Rows[1][index], Z: b.Rows[2][index]}
+	return []float64{b.Rows[0][index], b.Rows[1][index], b.Rows[2][index]}
 }
 
 // SetColumn sets the specified column of the basis matrix.
-func (b *Basis) SetColumn(index int, value Vector3) {
+func (b *Basis) SetColumn(index int, value [3]float64) {
 	// Set actual basis axis column (we store transposed as Rows for performance).
-	b.Rows[0][index] = value.X
-	b.Rows[1][index] = value.Y
-	b.Rows[2][index] = value.Z
+	b.Rows[0][index] = value[0]
+	b.Rows[1][index] = value[1]
+	b.Rows[2][index] = value[2]
 }
 
 // GetMainDiagonal returns the main diagonal of the basis matrix.
-func (b Basis) GetMainDiagonal() Vector3 {
-	return Vector3{X: b.Rows[0][0], Y: b.Rows[1][1], Z: b.Rows[2][2]}
+func (b Basis) GetMainDiagonal() []float64 {
+	return []float64{b.Rows[0][0], b.Rows[1][1], b.Rows[2][2]}
 }
 
 // TransposeXform returns the result of transposing and multiplying the provided basis matrix with this basis matrix.
@@ -126,7 +132,7 @@ func (b Basis) TransposeXform(m Basis) Basis {
 }
 
 // Set the basis matrix to represent a rotation around the given axis by the specified angle.
-func (b *Basis) SetAxisAngle(axis Vector3, angle float64) {
+func (b *Basis) SetAxisAngle(axis [3]float64, angle float64) {
 	// Ensure axis is normalized (optional check)
 	// if !axis.IsNormalized() {
 	//     // Optionally handle error
@@ -134,7 +140,7 @@ func (b *Basis) SetAxisAngle(axis Vector3, angle float64) {
 	// }
 
 	// Compute squared components of the axis
-	axisSq := Vector3{X: axis.X * axis.X, Y: axis.Y * axis.Y, Z: axis.Z * axis.Z}
+	axisSq := [3]float64{axis[0] * axis[0], axis[1] * axis[1], axis[2] * axis[2]}
 
 	// Compute cosine and sine of the angle
 	cosine := math.Cos(angle)
@@ -142,40 +148,34 @@ func (b *Basis) SetAxisAngle(axis Vector3, angle float64) {
 
 	// Compute intermediate values
 	t := 1 - cosine
-	xyzt := axis.X * axis.Y * t
-	zyxs := axis.Z * sine
+	xyzt := axis[0] * axis[1] * t
+	zyxs := axis[2] * sine
 
 	// Set elements of the basis matrix
-	b.Rows[0][0] = axisSq.X + cosine*(1.0-axisSq.X)
-	b.Rows[1][1] = axisSq.Y + cosine*(1.0-axisSq.Y)
-	b.Rows[2][2] = axisSq.Z + cosine*(1.0-axisSq.Z)
+	b.Rows[0][0] = axisSq[0] + cosine*(1.0-axisSq[0])
+	b.Rows[1][1] = axisSq[1] + cosine*(1.0-axisSq[1])
+	b.Rows[2][2] = axisSq[2] + cosine*(1.0-axisSq[2])
 
 	b.Rows[0][1] = xyzt - zyxs
 	b.Rows[1][0] = xyzt + zyxs
 
-	xyzt = axis.X * axis.Z * t
-	zyxs = axis.Y * sine
+	xyzt = axis[0] * axis[2] * t
+	zyxs = axis[1] * sine
 	b.Rows[0][2] = xyzt + zyxs
 	b.Rows[2][0] = xyzt - zyxs
 
-	xyzt = axis.Y * axis.Z * t
-	zyxs = axis.X * sine
+	xyzt = axis[1] * axis[2] * t
+	zyxs = axis[0] * sine
 	b.Rows[1][2] = xyzt - zyxs
 	b.Rows[2][1] = xyzt + zyxs
 }
 
-func (b Basis) Xform(pVector Vector3) Vector3 {
-	return NewVector3(
-		b.rowToVector3(0).Dot(pVector),
-		b.rowToVector3(1).Dot(pVector),
-		b.rowToVector3(2).Dot(pVector),
-	)
-}
-
-func (b *Basis) rowToVector3(rowIdx int) Vector3 {
-	row := b.Rows[rowIdx]
-	vec := NewVector3(row[0], row[1], row[2])
-	return vec
+func (b Basis) Xform(pVector [3]float64) [3]float64 {
+	return [3]float64{
+		utils.Dot3(b.Rows[0], pVector),
+		utils.Dot3(b.Rows[1], pVector),
+		utils.Dot3(b.Rows[2], pVector),
+	}
 }
 
 func (b *Basis) Determinant() float64 {

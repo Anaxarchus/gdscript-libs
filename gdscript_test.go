@@ -1,4 +1,4 @@
-package mathgd
+package zerogdscript
 
 import "testing"
 

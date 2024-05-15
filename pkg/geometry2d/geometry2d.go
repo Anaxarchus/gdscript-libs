@@ -1,4 +1,4 @@
-package mathgd
+package geometry2d
 
 /**************************************************************************/
 /*  geometry_2d.h                                                         */
@@ -37,6 +37,8 @@ package mathgd
 import (
 	"math"
 
+	zerogdscript "github.com/Anaxarchus/zero-gdscript"
+	"github.com/Anaxarchus/zero-gdscript/pkg/vector2"
 	clipper "github.com/ctessum/go.clipper"
 )
 
@@ -60,7 +62,7 @@ const (
 	EndTypeRound
 )
 
-func GetClosestPointsBetweenSegments(p1, q1, p2, q2 Vector2) float64 {
+func GetClosestPointsBetweenSegments(p1, q1, p2, q2 vector2.Vector2) float64 {
 	d1 := q1.Sub(p1) // Direction vector of segment S1.
 	d2 := q2.Sub(p2) // Direction vector of segment S2.
 	r := p1.Sub(p2)
@@ -70,23 +72,23 @@ func GetClosestPointsBetweenSegments(p1, q1, p2, q2 Vector2) float64 {
 	f := d2.Dot(r)
 	var s, t float64
 	// Check if either or both segments degenerate into points.
-	if a <= CMP_EPSILON && e <= CMP_EPSILON {
+	if a <= zerogdscript.CMP_EPSILON && e <= zerogdscript.CMP_EPSILON {
 		// Both segments degenerate into points.
 		c1 := p1
 		c2 := p2
 		return math.Sqrt((c1.Sub(c2)).Dot(c1.Sub(c2)))
 	}
-	if a <= CMP_EPSILON {
+	if a <= zerogdscript.CMP_EPSILON {
 		// First segment degenerates into a point.
 		s = 0.0
 		t = f / e // s = 0 => t = (b*s + f) / e = f / e
-		t = Clampf(t, 0.0, 1.0)
+		t = zerogdscript.Clampf(t, 0.0, 1.0)
 	} else {
 		c := d1.Dot(r)
-		if e <= CMP_EPSILON {
+		if e <= zerogdscript.CMP_EPSILON {
 			// Second segment degenerates into a point.
 			t = 0.0
-			s = Clampf(-c/a, 0.0, 1.0) // t = 0 => s = (b*t - c) / a = -c / a
+			s = zerogdscript.Clampf(-c/a, 0.0, 1.0) // t = 0 => s = (b*t - c) / a = -c / a
 		} else {
 			// The general nondegenerate case starts here.
 			b := d1.Dot(d2)
@@ -94,7 +96,7 @@ func GetClosestPointsBetweenSegments(p1, q1, p2, q2 Vector2) float64 {
 			// If segments not parallel, compute closest point on L1 to L2 and
 			// clamp to segment S1. Else pick arbitrary s (here 0).
 			if denom != 0.0 {
-				s = Clampf((b*f-c*e)/denom, 0.0, 1.0)
+				s = zerogdscript.Clampf((b*f-c*e)/denom, 0.0, 1.0)
 			} else {
 				s = 0.0
 			}
@@ -107,10 +109,10 @@ func GetClosestPointsBetweenSegments(p1, q1, p2, q2 Vector2) float64 {
 			// and clamp s to [0, 1].
 			if t < 0.0 {
 				t = 0.0
-				s = Clampf(-c/a, 0.0, 1.0)
+				s = zerogdscript.Clampf(-c/a, 0.0, 1.0)
 			} else if t > 1.0 {
 				t = 1.0
-				s = Clampf((b-c)/a, 0.0, 1.0)
+				s = zerogdscript.Clampf((b-c)/a, 0.0, 1.0)
 			}
 		}
 	}
@@ -119,7 +121,7 @@ func GetClosestPointsBetweenSegments(p1, q1, p2, q2 Vector2) float64 {
 	return math.Sqrt((c1.Sub(c2)).Dot(c1.Sub(c2)))
 }
 
-func GetClosestPointToSegment(point Vector2, segment [2]Vector2) Vector2 {
+func GetClosestPointToSegment(point vector2.Vector2, segment [2]vector2.Vector2) vector2.Vector2 {
 	p := point.Sub(segment[0])
 	n := segment[1].Sub(segment[0])
 	l2 := n.LengthSquared()
@@ -138,15 +140,15 @@ func GetClosestPointToSegment(point Vector2, segment [2]Vector2) Vector2 {
 	}
 }
 
-func GetDistanceToSegment(point Vector2, segment [2]Vector2) float64 {
+func GetDistanceToSegment(point vector2.Vector2, segment [2]vector2.Vector2) float64 {
 	return point.DistanceTo(GetClosestPointToSegment(point, segment))
 }
 
-func GetDistanceSquaredToSegment(point Vector2, segment [2]Vector2) float64 {
+func GetDistanceSquaredToSegment(point vector2.Vector2, segment [2]vector2.Vector2) float64 {
 	return point.DistanceSquaredTo(GetClosestPointToSegment(point, segment))
 }
 
-func GetClosestPointToSegmentUncapped(point Vector2, segment [2]Vector2) Vector2 {
+func GetClosestPointToSegmentUncapped(point vector2.Vector2, segment [2]vector2.Vector2) vector2.Vector2 {
 	p := point.Sub(segment[0])
 	n := segment[1].Sub(segment[0])
 	l2 := n.LengthSquared()
@@ -159,12 +161,12 @@ func GetClosestPointToSegmentUncapped(point Vector2, segment [2]Vector2) Vector2
 	return segment[0].Add(n.Mulf(d)) // Inside.
 }
 
-func LineIntersectsLine(from_a, dir_a, from_b, dir_b Vector2) Vector2 {
+func LineIntersectsLine(from_a, dir_a, from_b, dir_b vector2.Vector2) vector2.Vector2 {
 	// See http://paulbourke.net/geometry/pointlineplane/
 
 	denom := dir_b.Y*dir_a.X - dir_b.X*dir_a.Y
-	if IsZeroApprox(denom) { // Parallel?
-		return ZeroVector2()
+	if zerogdscript.IsZeroApprox(denom) { // Parallel?
+		return vector2.Zero()
 	}
 
 	v := from_a.Sub(from_b)
@@ -172,54 +174,54 @@ func LineIntersectsLine(from_a, dir_a, from_b, dir_b Vector2) Vector2 {
 	return from_a.Add(dir_a.Mulf(t))
 }
 
-func SegmentIntersectsSegment(from_a, to_a, from_b, to_b Vector2) Vector2 {
+func SegmentIntersectsSegment(from_a, to_a, from_b, to_b vector2.Vector2) vector2.Vector2 {
 	B := to_a.Sub(from_a)
 	C := from_b.Sub(from_a)
 	D := to_b.Sub(from_a)
 
 	ABlen := B.Dot(B)
 	if ABlen <= 0 {
-		return ZeroVector2()
+		return vector2.Zero()
 	}
 	Bn := B.Divf(ABlen)
-	C = NewVector2(C.X*Bn.X+C.Y*Bn.Y, C.Y*Bn.X-C.X*Bn.Y)
-	D = NewVector2(D.X*Bn.X+D.Y*Bn.Y, D.Y*Bn.X-D.X*Bn.Y)
+	C = vector2.New(C.X*Bn.X+C.Y*Bn.Y, C.Y*Bn.X-C.X*Bn.Y)
+	D = vector2.New(D.X*Bn.X+D.Y*Bn.Y, D.Y*Bn.X-D.X*Bn.Y)
 
 	// Fail if C x B and D x B have the same sign (segments don't intersect).
-	if (C.Y < -CMP_EPSILON && D.Y < -CMP_EPSILON) || (C.Y > CMP_EPSILON && D.Y > CMP_EPSILON) {
-		return ZeroVector2()
+	if (C.Y < -zerogdscript.CMP_EPSILON && D.Y < -zerogdscript.CMP_EPSILON) || (C.Y > zerogdscript.CMP_EPSILON && D.Y > zerogdscript.CMP_EPSILON) {
+		return vector2.Zero()
 	}
 
 	// Fail if segments are parallel or colinear.
 	// (when A x B == zero, i.e (C - D) x B == zero, i.e C x B == D x B)
-	if IsEqualApprox(C.Y, D.Y) {
-		return ZeroVector2()
+	if zerogdscript.IsEqualApprox(C.Y, D.Y) {
+		return vector2.Zero()
 	}
 
 	ABpos := D.X + (C.X-D.X)*D.Y/(D.Y-C.Y)
 
 	// Fail if segment C-D crosses line A-B outside of segment A-B.
 	if (ABpos < 0) || (ABpos > 1) {
-		return ZeroVector2()
+		return vector2.Zero()
 	}
 
 	// Apply the discovered position to line A-B in the original coordinate system.
 	return from_a.Add(B.Mulf(ABpos))
 }
 
-func OffsetPolygon(polygon []Vector2, delta float64, joinType JoinType) [][]Vector2 {
+func OffsetPolygon(polygon []vector2.Vector2, delta float64, joinType JoinType) [][]vector2.Vector2 {
 	return doOffset(polygon, delta, clipper.JoinType(joinType), clipper.EtClosedPolygon)
 }
 
-func OffsetPolyline(polygon []Vector2, delta float64, joinType JoinType, endType EndType) [][]Vector2 {
+func OffsetPolyline(polygon []vector2.Vector2, delta float64, joinType JoinType, endType EndType) [][]vector2.Vector2 {
 	if endType == EndTypePolygon {
-		return [][]Vector2{}
+		return [][]vector2.Vector2{}
 	}
 	return doOffset(polygon, delta, clipper.JoinType(joinType), clipper.EndType(endType))
 }
 
 // IsPolygonClockwise determines if the given polygon points are in a clockwise order.
-func IsPolygonClockwise(polygon []*Vector2) bool {
+func IsPolygonClockwise(polygon []*vector2.Vector2) bool {
 	c := len(polygon)
 	if c < 3 {
 		return false
@@ -239,11 +241,11 @@ func toFixedPointPrecision(x, y float64) *clipper.IntPoint {
 	return clipper.NewIntPointFromFloat(x*100000000, y*100000000)
 }
 
-func toFloatingPointPrecision(value *clipper.IntPoint) Vector2 {
-	return NewVector2(float64(value.X), float64(value.Y)).Divf(100000000)
+func toFloatingPointPrecision(value *clipper.IntPoint) vector2.Vector2 {
+	return vector2.New(float64(value.X), float64(value.Y)).Divf(100000000)
 }
 
-func doOffset(polygon []Vector2, delta float64, jt clipper.JoinType, et clipper.EndType) [][]Vector2 {
+func doOffset(polygon []vector2.Vector2, delta float64, jt clipper.JoinType, et clipper.EndType) [][]vector2.Vector2 {
 	clip := clipper.NewClipperOffset()
 	path := clipper.NewPath()
 	for _, pt := range polygon {
@@ -257,12 +259,12 @@ func doOffset(polygon []Vector2, delta float64, jt clipper.JoinType, et clipper.
 
 	solutions := clip.Execute(delta * 100000000)
 	if len(solutions) == 0 {
-		return [][]Vector2{}
+		return [][]vector2.Vector2{}
 	}
 
-	res := make([][]Vector2, len(solutions))
+	res := make([][]vector2.Vector2, len(solutions))
 	for _, solution := range solutions {
-		points := make([]Vector2, len(solution))
+		points := make([]vector2.Vector2, len(solution))
 		for _, pt := range solution {
 			points = append(points, toFloatingPointPrecision(pt))
 		}

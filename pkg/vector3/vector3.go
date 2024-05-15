@@ -1,4 +1,4 @@
-package mathgd
+package vector3
 
 /**************************************************************************/
 /*  vector3.h                                                             */
@@ -36,6 +36,9 @@ package mathgd
 
 import (
 	"math"
+
+	zerogdscript "github.com/Anaxarchus/zero-gdscript"
+	"github.com/Anaxarchus/zero-gdscript/pkg/basis"
 )
 
 type Vector3 struct {
@@ -44,7 +47,7 @@ type Vector3 struct {
 	Z float64 `json:"z"`
 }
 
-func NewVector3(x, y, z float64) Vector3 {
+func New(x, y, z float64) Vector3 {
 	return Vector3{
 		X: x,
 		Y: y,
@@ -52,24 +55,16 @@ func NewVector3(x, y, z float64) Vector3 {
 	}
 }
 
-func CopyVector3(vector Vector3) Vector3 {
-	return NewVector3(vector.X, vector.Y, vector.Z)
+func Copy(vector Vector3) Vector3 {
+	return New(vector.X, vector.Y, vector.Z)
 }
 
-func ZeroVector3() Vector3 {
-	return NewVector3(0, 0, 0)
+func Zero() Vector3 {
+	return New(0, 0, 0)
 }
 
-func OneVector3() Vector3 {
-	return NewVector3(1, 1, 1)
-}
-
-func CrossVector3(a, b Vector3) Vector3 {
-	return a.Cross(b)
-}
-
-func DotVector3(a, b Vector3) float64 {
-	return a.Dot(b)
+func One() Vector3 {
+	return New(1, 1, 1)
 }
 
 func (v *Vector3) set(x, y, z float64) {
@@ -79,11 +74,11 @@ func (v *Vector3) set(x, y, z float64) {
 }
 
 func (v Vector3) IsUp() bool {
-	return v.IsEqualApprox(NewVector3(0, 0, -1))
+	return v.IsEqualApprox(New(0, 0, -1))
 }
 
 func (v Vector3) IsDown() bool {
-	return v.IsEqualApprox(NewVector3(0, 0, 1))
+	return v.IsEqualApprox(New(0, 0, 1))
 }
 
 func (v Vector3) Add(with Vector3) Vector3 {
@@ -165,7 +160,7 @@ func (v Vector3) Abs() Vector3 {
 }
 
 func (v Vector3) Sign() Vector3 {
-	v.set(Sign(v.X), Sign(v.Y), Sign(v.Z))
+	v.set(zerogdscript.Sign(v.X), zerogdscript.Sign(v.Y), zerogdscript.Sign(v.Z))
 	return v
 }
 
@@ -186,9 +181,9 @@ func (v Vector3) Round() Vector3 {
 
 func (v Vector3) Lerp(to Vector3, weight float64) Vector3 {
 	v.set(
-		Lerp(v.X, to.X, weight),
-		Lerp(v.Y, to.Y, weight),
-		Lerp(v.Z, to.Z, weight),
+		zerogdscript.Lerp(v.X, to.X, weight),
+		zerogdscript.Lerp(v.Y, to.Y, weight),
+		zerogdscript.Lerp(v.Z, to.Z, weight),
 	)
 	return v
 }
@@ -210,36 +205,36 @@ func (v Vector3) Slerp(to Vector3, weight float64) Vector3 {
 	}
 	axis = axis.Divf(math.Sqrt(al2))
 	sl := math.Sqrt(sl2)
-	rl := Lerp(sl, math.Sqrt(el2), weight)
+	rl := zerogdscript.Lerp(sl, math.Sqrt(el2), weight)
 	angle := v.AngleTo(to)
 	return v.Rotated(axis, angle*weight).Mulf(rl / sl)
 }
 
 func (v Vector3) CubicInterpolate(b Vector3, pre_a Vector3, post_b Vector3, weight float64) Vector3 {
-	v.X = CubicInterpolate(v.X, b.X, pre_a.X, post_b.X, weight)
-	v.Y = CubicInterpolate(v.Y, b.Y, pre_a.Y, post_b.Y, weight)
-	v.Z = CubicInterpolate(v.Z, b.Z, pre_a.Z, post_b.Z, weight)
+	v.X = zerogdscript.CubicInterpolate(v.X, b.X, pre_a.X, post_b.X, weight)
+	v.Y = zerogdscript.CubicInterpolate(v.Y, b.Y, pre_a.Y, post_b.Y, weight)
+	v.Z = zerogdscript.CubicInterpolate(v.Z, b.Z, pre_a.Z, post_b.Z, weight)
 	return v
 }
 
 func (v Vector3) CubicInterpolateInTime(b, pre_a, post_b Vector3, weight, b_t, pre_a_t, post_b_t float64) Vector3 {
-	v.X = CubicInterpolateInTime(v.X, b.X, pre_a.X, post_b.X, weight, b_t, pre_a_t, post_b_t)
-	v.Y = CubicInterpolateInTime(v.Y, b.Y, pre_a.Y, post_b.Y, weight, b_t, pre_a_t, post_b_t)
-	v.Z = CubicInterpolateInTime(v.Z, b.Z, pre_a.Z, post_b.Z, weight, b_t, pre_a_t, post_b_t)
+	v.X = zerogdscript.CubicInterpolateInTime(v.X, b.X, pre_a.X, post_b.X, weight, b_t, pre_a_t, post_b_t)
+	v.Y = zerogdscript.CubicInterpolateInTime(v.Y, b.Y, pre_a.Y, post_b.Y, weight, b_t, pre_a_t, post_b_t)
+	v.Z = zerogdscript.CubicInterpolateInTime(v.Z, b.Z, pre_a.Z, post_b.Z, weight, b_t, pre_a_t, post_b_t)
 	return v
 }
 
 func (v Vector3) BezierInterpolate(control_1, control_2, end Vector3, t float64) Vector3 {
-	v.X = BezierInterpolate(v.X, control_1.X, control_2.X, end.X, t)
-	v.Y = BezierInterpolate(v.Y, control_1.Y, control_2.Y, end.Y, t)
-	v.Z = BezierInterpolate(v.Z, control_1.Z, control_2.Z, end.Z, t)
+	v.X = zerogdscript.BezierInterpolate(v.X, control_1.X, control_2.X, end.X, t)
+	v.Y = zerogdscript.BezierInterpolate(v.Y, control_1.Y, control_2.Y, end.Y, t)
+	v.Z = zerogdscript.BezierInterpolate(v.Z, control_1.Z, control_2.Z, end.Z, t)
 	return v
 }
 
 func (v Vector3) BezierDerivative(control_1, control_2, end Vector3, t float64) Vector3 {
-	v.X = BezierDerivative(v.X, control_1.X, control_2.X, end.X, t)
-	v.Y = BezierDerivative(v.Y, control_1.Y, control_2.Y, end.Y, t)
-	v.Z = BezierDerivative(v.Z, control_1.Z, control_2.Z, end.Z, t)
+	v.X = zerogdscript.BezierDerivative(v.X, control_1.X, control_2.X, end.X, t)
+	v.Y = zerogdscript.BezierDerivative(v.Y, control_1.Y, control_2.Y, end.Y, t)
+	v.Z = zerogdscript.BezierDerivative(v.Z, control_1.Z, control_2.Z, end.Z, t)
 	return v
 }
 
@@ -252,11 +247,11 @@ func (v Vector3) DistanceSquaredTo(to Vector3) float64 {
 }
 
 func (v Vector3) Posmod(mod float64) Vector3 {
-	return NewVector3(Fposmod(v.X, mod), Fposmod(v.Y, mod), Fposmod(v.Z, mod))
+	return New(zerogdscript.Fposmod(v.X, mod), zerogdscript.Fposmod(v.Y, mod), zerogdscript.Fposmod(v.Z, mod))
 }
 
 func (v Vector3) Posmodv(modv Vector3) Vector3 {
-	return NewVector3(Fposmod(v.X, modv.X), Fposmod(v.Y, modv.Y), Fposmod(v.Z, modv.Z))
+	return New(zerogdscript.Fposmod(v.X, modv.X), zerogdscript.Fposmod(v.Y, modv.Y), zerogdscript.Fposmod(v.Z, modv.Z))
 }
 
 func (v Vector3) Project(to Vector3) Vector3 {
@@ -278,7 +273,7 @@ func (v Vector3) SignedAngleTo(to, axis Vector3) float64 {
 }
 
 func (v Vector3) DirectionTo(to Vector3) Vector3 {
-	ret := NewVector3(to.X-v.X, to.Y-v.Y, to.Z-v.Z)
+	ret := New(to.X-v.X, to.Y-v.Y, to.Z-v.Z)
 	ret.Normalize()
 	return ret
 }
@@ -318,11 +313,11 @@ func (v Vector3) Normalized() Vector3 {
 
 func (v Vector3) IsNormalized() bool {
 	// use length_squared() instead of length() to avoid sqrt(), makes it more stringent.
-	return IsEqualApprox(v.LengthSquared(), 1.0)
+	return zerogdscript.IsEqualApprox(v.LengthSquared(), 1.0)
 }
 
 func (v Vector3) IsEqualApprox(b Vector3) bool {
-	return IsEqualApprox(v.X, b.X) && IsEqualApprox(v.Y, b.Y) && IsEqualApprox(v.Z, b.Z)
+	return zerogdscript.IsEqualApprox(v.X, b.X) && zerogdscript.IsEqualApprox(v.Y, b.Y) && zerogdscript.IsEqualApprox(v.Z, b.Z)
 }
 
 func (v Vector3) Inverse() Vector3 {
@@ -352,8 +347,8 @@ func (v Vector3) Reflect(normal Vector3) Vector3 {
 
 // Rotate the current Vector3 around the provided axis by the specified angle.
 func (v *Vector3) Rotate(axis Vector3, angle float64) {
-	basis := NewBasisFromAxisAndAngle(axis, angle)
-	*v = basis.Xform(*v)
+	b := basis.FromAxisAndAngle(axis.getSlice(), angle)
+	v.setSlice(b.Xform(v.getSlice()))
 }
 
 // Return a new Vector3 that is the result of rotating the current Vector3 around the provided axis by the specified angle.
@@ -363,6 +358,13 @@ func (v Vector3) Rotated(axis Vector3, angle float64) Vector3 {
 	return rotatedVector
 }
 
-func (v Vector3) ToVector2() Vector2 {
-	return NewVector2(v.X, v.Y)
+// Return a new Vector3 that is the result of rotating the current Vector3 around the provided axis by the specified angle.
+func (v Vector3) getSlice() [3]float64 {
+	return [3]float64{v.X, v.Y, v.Z}
+}
+
+func (v *Vector3) setSlice(slice [3]float64) {
+	v.X = slice[0]
+	v.Y = slice[1]
+	v.Z = slice[2]
 }

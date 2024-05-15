@@ -1,4 +1,4 @@
-package mathgd
+package geometry2d
 
 import "testing"
 

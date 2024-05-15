@@ -1,4 +1,4 @@
-package mathgd
+package quaternion
 
 import "testing"
 

@@ -1,4 +1,4 @@
-package mathgd
+package vector2
 
 import "testing"
 
