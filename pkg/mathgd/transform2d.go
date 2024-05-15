@@ -77,6 +77,38 @@ func Transform2DFromColumns(x, y, origin Vector2) Transform2D {
 	}
 }
 
+func (t *Transform2D) GetRotation() float64 {
+	return math.Atan2(t.Columns[0].Y, t.Columns[0].X)
+}
+
+func (t *Transform2D) SetRotation(p_rot float64) {
+	scale := t.GetScale()
+	cr := math.Cos(p_rot)
+	sr := math.Sin(p_rot)
+	t.Columns[0].X = cr
+	t.Columns[0].Y = sr
+	t.Columns[1].X = -sr
+	t.Columns[1].Y = cr
+	t.SetScale(scale)
+}
+
+func (t *Transform2D) GetScale() Vector2 {
+	detSign := Sign(t.determinant())
+	return NewVector2(t.Columns[0].Length(), detSign*t.Columns[1].Length())
+}
+
+func (t *Transform2D) SetScale(p_scale Vector2) {
+	t.Columns[0].Normalize()
+	t.Columns[1].Normalize()
+	t.Columns[0] = t.Columns[0].Mulf(p_scale.X)
+	t.Columns[1] = t.Columns[1].Mulf(p_scale.Y)
+}
+
+func (t Transform2D) Translated(p_offset Vector2) Transform2D {
+	// Equivalent to left multiplication
+	return Transform2DFromColumns(t.Columns[0], t.Columns[1], t.Columns[2].Add(p_offset))
+}
+
 // ToLocal converts a point from global space to local space.
 func (t Transform2D) ToLocal(point Vector2) Vector2 {
 	return t.AffineInverse().Xform(point)
