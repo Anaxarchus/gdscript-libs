@@ -1,4 +1,4 @@
-module github.com/Anaxarchus/gdscript-libs
+module github.com/Anaxarchus/zero-gdscript
 
 go 1.21.4
 
