@@ -221,7 +221,7 @@ func OffsetPolyline(polygon []vector2.Vector2, delta float64, joinType JoinType,
 }
 
 // IsPolygonClockwise determines if the given polygon points are in a clockwise order.
-func IsPolygonClockwise(polygon []*vector2.Vector2) bool {
+func IsPolygonClockwise(polygon []vector2.Vector2) bool {
 	c := len(polygon)
 	if c < 3 {
 		return false
